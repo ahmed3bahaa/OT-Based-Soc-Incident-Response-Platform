@@ -2,9 +2,8 @@ import asyncio
 import socket
 from pathlib import Path
 
-from cryptography.x509.oid import ExtendedKeyUsageOID
 from asyncua.crypto.cert_gen import setup_self_signed_certificate
-
+from cryptography.x509.oid import ExtendedKeyUsageOID
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
 CERT_DIR = PROJECT_DIR / "certs"

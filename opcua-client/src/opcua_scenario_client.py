@@ -11,7 +11,6 @@ from asyncua import Client, ua
 from asyncua.crypto.security_policies import SecurityPolicyBasic256Sha256
 from dotenv import load_dotenv
 
-
 PROJECT_DIR = Path(__file__).resolve().parents[1]
 load_dotenv(PROJECT_DIR / ".env")
 
@@ -223,7 +222,7 @@ async def execute_write(
 
     append_json_event(event)
     print(json.dumps(event, indent=2, ensure_ascii=False))
-    return 0
+    return 0 if event["event"]["outcome"] == "success" else 1
 
 
 def parse_arguments() -> argparse.Namespace:
