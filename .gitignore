@@ -1,0 +1,43 @@
+# environment and secrets
+.env
+.env.*
+!.env.example
+# python related
+.venv/
+**/.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+# Keys and Certificate
+certs/
+**/certs/
+*.key
+*.pem
+*.pfx
+*.p12
+*.der
+# runtime logs and evidence
+logs/
+**/logs/
+evidence/
+*.log
+*.pcap
+*.pcapng
+*.opcdiag
+eve.json
+archives.json
+# Frontend
+node_modules/
+.next/
+# databases
+*.sqlite3
+postgres-data/
+# Editor and OS
+.vscode/
+.idea/
+.DS_store
+Thumbs.db
+*.jsonl
+*.crt
+*.cer
