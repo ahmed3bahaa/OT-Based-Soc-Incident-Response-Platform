@@ -1,0 +1,27 @@
+<group name="ot,opcua,">
+
+  <!-- Base classification only. Normal successful writes do not alert. -->
+  <rule id="110100" level="0">
+    <decoded_as>json</decoded_as>
+    <field name="event.action">^opcua_write$</field>
+    <description>OT OPC UA write operation observed.</description>
+    <group>ot,opcua,write,</group>
+  </rule>
+
+  <!-- A write operation explicitly reported as failed. -->
+  <rule id="110101" level="7">
+    <if_sid>110100</if_sid>
+    <field name="event.outcome">^failure$</field>
+    <description>OT OPC UA write failed.</description>
+    <group>ot,opcua,write_failure,</group>
+  </rule>
+
+  <!-- The client wrote a value but read back a different value. -->
+  <rule id="110102" level="10">
+    <if_sid>110101</if_sid>
+    <field name="ot.verified">^false$</field>
+    <description>OT OPC UA write verification mismatch.</description>
+    <group>ot,opcua,verification_mismatch,</group>
+  </rule>
+
+</group>
