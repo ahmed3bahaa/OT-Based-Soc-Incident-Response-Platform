@@ -22,6 +22,17 @@
     <field name="ot.verified">^false$</field>
     <description>OT OPC UA write verification mismatch.</description>
     <group>ot,opcua,verification_mismatch,</group>
+  </rule> 
+
+  <rule id="110103" level="3">
+    <decoded_as>json</decoded_as>
+    <field name="event.action">^opcua_datachange$</field>
+    <field name="event.outcome">^observed$</field>
+    <field name="ot.protocol">^opcua$</field>
+    <field name="ot.operation">^datachange$</field>
+    <field name="ot.scenario_id">^gui-monitor-proof-</field>
+    <description>OT OPC UA monitored data change observed - validation scenario</description>
+    <group>ot,opcua,validation,</group>
   </rule>
 
 </group>
