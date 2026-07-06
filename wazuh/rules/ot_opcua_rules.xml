@@ -34,5 +34,13 @@
     <description>OT OPC UA monitored data change observed - validation scenario</description>
     <group>ot,opcua,validation,</group>
   </rule>
-
+<rule id="110104" level="3">
+  <if_sid>86600</if_sid>
+  <field name="event_type">^flow$</field>
+  <field name="proto">^TCP$</field>
+  <field name="dest_ip">^192\.168\.56\.1$</field>
+  <field name="dest_port">^49320$</field>
+  <description>OT OPC UA network flow observed by Suricata - validation scenario</description>
+  <group>ot,opcua,suricata,network,validation,</group>
+</rule>
 </group>
