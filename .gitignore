@@ -44,3 +44,12 @@ Thumbs.db
 opcua-client/venv/
 opcua-client/.venv/
 opcua-client/logs/*.jsonl
+opcua-client/certs/
+
+# KEPServerEX diagnostic exports and runtime spool
+kepserver/logs/
+kepserver/raw/
+kepserver/spool/
+kepserver/**/*.txt
+kepserver/**/*.json
+kepserver/**/*.jsonl

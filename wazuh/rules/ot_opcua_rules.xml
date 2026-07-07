@@ -43,4 +43,14 @@
   <description>OT OPC UA network flow observed by Suricata - validation scenario</description>
   <group>ot,opcua,suricata,network,validation,</group>
 </rule>
+<rule id="110105" level="3">
+  <decoded_as>json</decoded_as>
+  <field name="event.action">^kepserver_opcua_write$</field>
+  <field name="event.outcome">^success$</field>
+  <field name="ot.protocol">^opcua$</field>
+  <field name="ot.operation">^write$</field>
+  <field name="ot.evidence_source">^kepserver_opc_diagnostics$</field>
+  <description>OT OPC UA write observed in KEPServerEX diagnostics - validation scenario</description>
+  <group>ot,opcua,kepserver,diagnostics,validation,</group>
+</rule>
 </group>
