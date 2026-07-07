@@ -30,9 +30,9 @@
     <field name="event.outcome">^observed$</field>
     <field name="ot.protocol">^opcua$</field>
     <field name="ot.operation">^datachange$</field>
-    <field name="ot.scenario_id">^gui-monitor-proof-</field>
-    <description>OT OPC UA monitored data change observed - validation scenario</description>
-    <group>ot,opcua,validation,</group>
+    <field name="ot.change_origin">^unknown_from_subscription$</field>
+    <description>OT OPC UA datachange observed by passive monitor - validation scenario</description>
+    <group>ot,opcua,monitor,datachange,validation,</group>
   </rule>
 <rule id="110104" level="3">
   <if_sid>86600</if_sid>
