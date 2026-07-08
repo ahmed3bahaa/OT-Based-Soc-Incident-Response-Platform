@@ -1,0 +1,35 @@
+[
+  {
+    "case_type": "confirmed_opcua_operation",
+    "classification": "suspicious_ot_operation",
+    "created_at": "2026-07-08T17:04:35.951301+00:00",
+    "correlation_window_seconds": 60,
+    "tag": "VALF",
+    "node_id": "ns=2;s=watersim.TankPLC.MAIN.ARTIRMA_VERI.VALF",
+    "old_value": "false",
+    "new_value": "true",
+    "source_ip": "192.168.56.10",
+    "destination_ip": "192.168.56.1",
+    "destination_port": "49320",
+    "rule_ids": [
+      "110104",
+      "110203"
+    ],
+    "evidence": [
+      {
+        "timestamp": "2026-07-08T17:02:06.323+0000",
+        "rule_id": "110203",
+        "description": "OT simulator valve command changed",
+        "agent": "Ubuntu",
+        "location": "/home/ahmed_bahaa/ot-project/opcua-client/logs/opcua_monitor.jsonl"
+      },
+      {
+        "timestamp": "2026-07-08T17:02:06.472+0000",
+        "rule_id": "110104",
+        "description": "OT OPC UA network flow observed by Suricata - validation scenario",
+        "agent": "My-Win-Machine",
+        "location": "C:\\OT-Project\\suricata-output\\flow-proof-current\\eve.json"
+      }
+    ]
+  }
+]
