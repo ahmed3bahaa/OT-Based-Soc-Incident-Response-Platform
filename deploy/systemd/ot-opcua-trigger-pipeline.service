@@ -1,0 +1,17 @@
+[Unit]
+Description=OT OPC UA GUI-Triggered Pipeline Listener
+After=network-online.target wazuh-manager.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ahmed_bahaa
+WorkingDirectory=/home/ahmed_bahaa/ot-project/opcua-client
+ExecStart=/home/ahmed_bahaa/ot-project/scripts/run-opcua-trigger-pipeline.sh
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

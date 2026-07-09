@@ -1,0 +1,44 @@
+<group name="ot,opcua,simulator,mvp,">
+
+  <rule id="110200" level="3">
+    <if_sid>110103</if_sid>
+    <field name="ot.tag" type="pcre2">^(SU_SEVIYESI|su_seviyesi|MOTOR1|motor1|MOTOR2|motor2|MOTOR3|motor3|VALF|valf|SAMANDIRA|samandira|DEBI|debi|DEBI2|debi2)$</field>
+    <description>OT simulator selected tag datachange observed - MVP rule</description>
+    <group>ot,opcua,simulator,mvp,validation,</group>
+  </rule>
+
+  <rule id="110201" level="7">
+    <if_sid>110200</if_sid>
+    <field name="ot.tag" type="pcre2">^(MOTOR1|motor1|MOTOR2|motor2|MOTOR3|motor3|VALF|valf)$</field>
+    <description>OT simulator critical command tag changed</description>
+    <group>ot,opcua,simulator,critical_command,</group>
+  </rule>
+
+  <rule id="110202" level="8">
+    <if_sid>110201</if_sid>
+    <field name="ot.tag" type="pcre2">^(MOTOR1|motor1|MOTOR2|motor2|MOTOR3|motor3)$</field>
+    <description>OT simulator motor or pump command changed</description>
+    <group>ot,opcua,simulator,motor,pump,command,</group>
+  </rule>
+
+  <rule id="110203" level="8">
+    <if_sid>110201</if_sid>
+    <field name="ot.tag" type="pcre2">^(VALF|valf)$</field>
+    <description>OT simulator valve command changed</description>
+    <group>ot,opcua,simulator,valve,command,</group>
+  </rule>
+
+  <rule id="110204" level="5">
+    <if_sid>110200</if_sid>
+    <field name="ot.tag" type="pcre2">^(SU_SEVIYESI|su_seviyesi)$</field>
+    <description>OT simulator water level tag changed</description>
+    <group>ot,opcua,simulator,water_level,process,</group>
+  </rule>
+
+  <rule id="110205" level="9" frequency="3" timeframe="120">
+    <if_matched_sid>110101</if_matched_sid>
+    <description>OT repeated failed OPC UA write attempts observed</description>
+    <group>ot,opcua,write_failure,repeated,</group>
+  </rule>
+
+</group>
