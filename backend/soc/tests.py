@@ -12,6 +12,7 @@ from rest_framework.test import APITestCase
 
 from soc.management.commands.poll_wazuh_alerts import default_search_body
 
+from .live_ingest import infer_rule_id
 from .models import Asset, Case, EvidenceEvent, LiveAlert, Rule, Tag
 
 
@@ -62,13 +63,13 @@ class SeedCatalogsCommandTests(TestCase):
         call_command("seed_catalogs", stdout=out)
 
         assert Rule.objects.count() == 9
-        assert Tag.objects.count() == 8
+        assert Tag.objects.count() == 9
         assert Asset.objects.count() == 2
 
         call_command("seed_catalogs", stdout=out)
 
         assert Rule.objects.count() == 9
-        assert Tag.objects.count() == 8
+        assert Tag.objects.count() == 9
         assert Asset.objects.count() == 2
         assert "rules updated=9" in out.getvalue()
 
@@ -102,6 +103,17 @@ class PollWazuhAlertsCommandTests(TestCase):
         } in filters
 
 
+class LiveIngestRuleInferenceTests(TestCase):
+    def test_generic_simulator_tags_map_to_selected_tag_rule(self) -> None:
+        for tag in ["SAMANDIRA", "DEBI", "DEBI2", "ScenarioID"]:
+            alert = {
+                "event": {"action": "opcua_datachange"},
+                "ot": {"tag": tag},
+            }
+
+            assert infer_rule_id(alert) == "110200"
+
+
 class ImportOpcuaCasesCommandTests(TestCase):
     def test_import_command_imports_fixture_and_skips_duplicates(self) -> None:
         out = StringIO()
@@ -111,7 +123,7 @@ class ImportOpcuaCasesCommandTests(TestCase):
         assert Case.objects.count() == 1
         assert EvidenceEvent.objects.count() == 2
         assert Rule.objects.count() == 9
-        assert Tag.objects.count() == 8
+        assert Tag.objects.count() == 9
         assert Asset.objects.count() == 2
 
         case = Case.objects.get()
@@ -324,7 +336,7 @@ class CaseFilteringAndSummaryApiTests(APITestCase):
 
         assert flow_evidence.status_code == 200
         assert flow_evidence.data["count"] == 4
-        assert writable_tags.data["count"] == 5
+        assert writable_tags.data["count"] == 6
         assert suspicious_rules.data["count"] == 3
         assert windows_assets.data["count"] == 1
 
@@ -335,7 +347,7 @@ class CaseFilteringAndSummaryApiTests(APITestCase):
         assert response.data["total_cases"] == 4
         assert response.data["total_evidence"] == 9
         assert response.data["total_rules"] == 9
-        assert response.data["total_tags"] == 8
+        assert response.data["total_tags"] == 9
         assert response.data["total_assets"] == 2
 
         classification_counts = {

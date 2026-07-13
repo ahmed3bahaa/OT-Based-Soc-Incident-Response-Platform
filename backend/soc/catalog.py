@@ -161,6 +161,15 @@ TAG_CATALOG = [
         "is_writable": False,
         "description": "Simulator secondary flow-rate process tag.",
     },
+    {
+        "name": "ScenarioID",
+        "node_id": f"{TAG_PREFIX}.ScenarioID",
+        "tag_type": "scenario_metadata",
+        "criticality": "low",
+        "station_or_area": "ARTIRMA_VERI",
+        "is_writable": True,
+        "description": "Simulator scenario identifier metadata tag.",
+    },
 ]
 
 ASSET_CATALOG = [

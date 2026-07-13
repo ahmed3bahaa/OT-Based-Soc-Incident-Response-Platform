@@ -155,6 +155,8 @@ def infer_rule_id(alert: dict[str, Any]) -> str:
             return "110203"
         if tag == "SU_SEVIYESI":
             return "110204"
+        if tag in {"SAMANDIRA", "DEBI", "DEBI2", "SCENARIOID"}:
+            return "110200"
         return "110103"
 
     return ""

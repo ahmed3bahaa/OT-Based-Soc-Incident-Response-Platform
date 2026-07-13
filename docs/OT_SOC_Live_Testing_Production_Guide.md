@@ -465,11 +465,11 @@ export OPCUA_USERNAME="<KEPSERVER_USERNAME>"
 export OPCUA_PASSWORD="<KEPSERVER_PASSWORD>"
 ```
 
-Start monitor for `VALF`:
+Start the monitor for all current simulator tags shown in UaExpert:
 
 ```bash
 python src/opcua_monitor.py \
-  --node-id "ns=2;s=watersim.TankPLC.MAIN.ARTIRMA_VERI.VALF" \
+  --all-simulator-tags \
   --scenario-id "uaexpert-live-test" \
   --interval-ms 1000
 ```
@@ -527,9 +527,9 @@ necessarily the same as Wazuh server API credentials on `55000`.
 If the poller shows recent `110104` alerts but creates no cases, network
 visibility is working but process/tag evidence is missing. Confirm that the
 Ubuntu OPC UA monitor is writing `opcua_monitor.jsonl` and that Wazuh is
-triggering `110203` for `VALF` or `110204` for `SU_SEVIYESI`. The backend only
-creates a confirmed case after it sees both the process/tag rule and the
-Suricata flow rule in the same correlation window.
+triggering one of the process/tag rules: `110200`, `110202`, `110203`, or
+`110204`. The backend only creates a confirmed case after it sees both the
+process/tag rule and the Suricata flow rule in the same correlation window.
 
 If the Wazuh installation assistant was used, print the generated passwords on
 the Ubuntu Wazuh node:
@@ -608,7 +608,7 @@ false -> true
 On Wazuh manager:
 
 ```bash
-sudo tail -f /var/ossec/logs/alerts/alerts.json | grep -E "110203|110104"
+sudo tail -f /var/ossec/logs/alerts/alerts.json | grep -E "110200|110202|110203|110204|110104"
 ```
 
 You need to see both:
@@ -689,12 +689,12 @@ The monitor should print a JSON event when the tag changes. If not:
 - check KEPServerEX trust
 - check that the monitor is subscribed before changing the tag
 
-## 7.3 Did Wazuh Produce Rule 110203?
+## 7.3 Did Wazuh Produce A Process/Tag Rule?
 
 On Wazuh manager:
 
 ```bash
-sudo tail -f /var/ossec/logs/alerts/alerts.json | grep 110203
+sudo tail -f /var/ossec/logs/alerts/alerts.json | grep -E "110200|110202|110203|110204"
 ```
 
 If missing:
@@ -1496,7 +1496,7 @@ On Ubuntu:
 
 ```bash
 python src/opcua_monitor.py \
-  --node-id "ns=2;s=watersim.TankPLC.MAIN.ARTIRMA_VERI.VALF" \
+  --all-simulator-tags \
   --scenario-id "demo-live-test" \
   --interval-ms 1000
 ```
@@ -1572,7 +1572,7 @@ http://127.0.0.1:3000
 
 ```bash
 python src/opcua_monitor.py \
-  --node-id "ns=2;s=watersim.TankPLC.MAIN.ARTIRMA_VERI.VALF" \
+  --all-simulator-tags \
   --scenario-id "uaexpert-live-test" \
   --interval-ms 1000
 ```

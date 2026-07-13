@@ -15,6 +15,18 @@ Wazuh alert or Vector event
 -> frontend auto-refresh
 ```
 
+For UaExpert-driven tests, run the Python monitor with all simulator tags:
+
+```bash
+python src/opcua_monitor.py \
+  --all-simulator-tags \
+  --scenario-id "uaexpert-live-test" \
+  --interval-ms 1000
+```
+
+This subscribes to `DEBI`, `MOTOR1`, `MOTOR2`, `SAMANDIRA`, `SU_SEVIYESI`,
+`ScenarioID`, and `VALF`.
+
 The backend still requires both sides of evidence before creating a confirmed case:
 
 - OPC UA process/tag rule: `110103`, `110200`, `110201`, `110202`, `110203`, `110204`, or `110205`
@@ -83,9 +95,9 @@ docker compose --profile wazuh-poller up -d wazuh-poller
 
 If the poller shows new `110104` alerts but no cases, Suricata is working but
 the OPC UA monitor/tag-change alert is missing. Check that Wazuh is receiving
-`opcua_monitor.jsonl` and triggering `110203` for `VALF` or `110204` for
-`SU_SEVIYESI`. A confirmed case requires one process/tag rule and one Suricata
-flow rule inside the correlation window.
+`opcua_monitor.jsonl` and triggering one of the process/tag rules:
+`110200`, `110202`, `110203`, or `110204`. A confirmed case requires one
+process/tag rule and one Suricata flow rule inside the correlation window.
 
 ## Vector
 

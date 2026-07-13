@@ -22,6 +22,19 @@ def resolve_project_path(value: str) -> Path:
 
 
 ENDPOINT = os.getenv("OPCUA_ENDPOINT", "opc.tcp://Ahmed:49320")
+NODE_PREFIX = os.getenv(
+    "OPCUA_NODE_PREFIX",
+    "ns=2;s=watersim.TankPLC.MAIN.ARTIRMA_VERI",
+)
+DEFAULT_SIMULATOR_TAGS = (
+    "DEBI",
+    "MOTOR1",
+    "MOTOR2",
+    "SAMANDIRA",
+    "SU_SEVIYESI",
+    "ScenarioID",
+    "VALF",
+)
 
 # IMPORTANT:
 # For this MVP monitor, we reuse the already trusted scenario-client certificate.
@@ -76,6 +89,15 @@ def tag_from_node_id(node_id: str) -> str:
     if ";" in node_id:
         return node_id.split(";")[-1]
     return node_id
+
+
+def default_simulator_node_ids() -> list[str]:
+    return [f"{NODE_PREFIX}.{tag}" for tag in DEFAULT_SIMULATOR_TAGS]
+
+
+def env_node_ids() -> list[str]:
+    raw = os.getenv("OPCUA_MONITOR_NODE_IDS", "")
+    return [node_id.strip() for node_id in raw.split(",") if node_id.strip()]
 
 
 def append_json_event(event: dict[str, Any]) -> None:
@@ -164,6 +186,7 @@ async def run_monitor(
     print(f"[+] User identity: {'username' if USERNAME else 'anonymous'}")
     print(f"[+] Monitor log: {MONITOR_LOG_FILE}")
     print(f"[+] Scenario ID: {scenario_id}")
+    print(f"[+] Node subscriptions: {len(node_ids)}")
 
     if not CERTIFICATE.exists():
         raise FileNotFoundError(f"Certificate not found: {CERTIFICATE}")
@@ -226,8 +249,12 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--node-id",
         action="append",
-        required=True,
         help="Full OPC UA NodeId to monitor. Can be used multiple times.",
+    )
+    parser.add_argument(
+        "--all-simulator-tags",
+        action="store_true",
+        help="Monitor the known KEPServerEX simulator tags used by the MVP lab.",
     )
     parser.add_argument(
         "--scenario-id",
@@ -241,14 +268,25 @@ def parse_arguments() -> argparse.Namespace:
         help="OPC UA subscription publishing interval in milliseconds.",
     )
 
-    return parser.parse_args()
+    args = parser.parse_args()
+
+    if not args.node_id and not args.all_simulator_tags and not env_node_ids():
+        parser.error(
+            "Provide --node-id, set OPCUA_MONITOR_NODE_IDS, "
+            "or use --all-simulator-tags."
+        )
+
+    return args
 
 
 async def main() -> int:
     args = parse_arguments()
+    node_ids = args.node_id or env_node_ids()
+    if args.all_simulator_tags:
+        node_ids = [*node_ids, *default_simulator_node_ids()]
 
     return await run_monitor(
-        node_ids=args.node_id,
+        node_ids=list(dict.fromkeys(node_ids)),
         scenario_id=args.scenario_id,
         interval_ms=args.interval_ms,
     )
