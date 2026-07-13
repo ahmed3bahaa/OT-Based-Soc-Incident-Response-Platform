@@ -39,6 +39,8 @@ Python OPC UA client and UaExpert
 The backend, frontend, and PostgreSQL 18 database can run together with Docker Compose:
 
 ```powershell
+Copy-Item .env.example .env
+# Edit .env and fill POSTGRES_PASSWORD plus any Wazuh/OPC UA secrets needed locally.
 docker compose up --build
 ```
 
@@ -72,6 +74,15 @@ PostgreSQL 18 uses the `postgres18-data` Docker volume mounted at:
 The PostgreSQL container still listens on `5432` inside Docker, but Docker exposes
 it to Windows on `5434`. Use `127.0.0.1:5434` from pgAdmin or local scripts.
 This avoids collisions with a local PostgreSQL service already listening on `5433`.
+
+All local credentials are read from `.env`. Do not pass Wazuh, PostgreSQL, or OPC UA
+passwords directly in commands, and do not commit `.env`.
+
+To run the Wazuh Indexer polling worker from Docker after filling `.env`:
+
+```powershell
+docker compose --profile wazuh-poller up -d wazuh-poller
+```
 
 If an older PostgreSQL volume was created with the previous `/var/lib/postgresql/data`
 mount, recreate the stack with the PostgreSQL 18 layout:

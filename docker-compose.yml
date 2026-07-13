@@ -2,28 +2,43 @@ services:
   db:
     image: postgres:18-alpine
     environment:
-      POSTGRES_DB: ot_soc
-      POSTGRES_USER: ot_soc
-      POSTGRES_PASSWORD: ot_soc
+      POSTGRES_DB: ${POSTGRES_DB:-ot_soc}
+      POSTGRES_USER: ${POSTGRES_USER:-ot_soc}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ot_soc}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ot_soc -d ot_soc"]
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
       interval: 5s
       timeout: 5s
       retries: 20
     volumes:
       - postgres18-data:/var/lib/postgresql
     ports:
-      - "5434:5432"
+      - "${POSTGRES_HOST_PORT:-5434}:5432"
 
   backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
     environment:
-      DATABASE_URL: postgresql://ot_soc:ot_soc@db:5432/ot_soc
-      DJANGO_DEBUG: "true"
-      DJANGO_ALLOWED_HOSTS: backend,localhost,127.0.0.1
-      DJANGO_CORS_ALLOWED_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
+      POSTGRES_DB: ${POSTGRES_DB:-ot_soc}
+      POSTGRES_USER: ${POSTGRES_USER:-ot_soc}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ot_soc}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-ot-soc-mvp-local-development-secret}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-true}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-backend,localhost,127.0.0.1}
+      DJANGO_CORS_ALLOWED_ORIGINS: ${DJANGO_CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      WAZUH_ALERTS_URL: ${WAZUH_ALERTS_URL:-}
+      WAZUH_INDEXER_ALERTS_URL: ${WAZUH_INDEXER_ALERTS_URL:-}
+      WAZUH_API_USERNAME: ${WAZUH_API_USERNAME:-}
+      WAZUH_API_PASSWORD: ${WAZUH_API_PASSWORD:-}
+      WAZUH_API_TOKEN: ${WAZUH_API_TOKEN:-}
+      WAZUH_API_INSECURE: ${WAZUH_API_INSECURE:-true}
+      WAZUH_ALERTS_METHOD: ${WAZUH_ALERTS_METHOD:-POST}
+      WAZUH_ALERTS_SIZE: ${WAZUH_ALERTS_SIZE:-100}
+      WAZUH_ALERTS_POLL_INTERVAL: ${WAZUH_ALERTS_POLL_INTERVAL:-5}
+      OT_SOC_CORRELATION_WINDOW_SECONDS: ${OT_SOC_CORRELATION_WINDOW_SECONDS:-900}
     command: >
       sh -c "python manage.py migrate
       && python manage.py seed_catalogs
@@ -48,13 +63,43 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
     environment:
-      OT_SOC_API_BASE_URL: http://backend:8000/api
-      NEXT_PUBLIC_OT_SOC_API_BASE_URL: http://127.0.0.1:8000/api
+      OT_SOC_API_BASE_URL: ${OT_SOC_API_BASE_URL:-http://backend:8000/api}
+      NEXT_PUBLIC_OT_SOC_API_BASE_URL: ${NEXT_PUBLIC_OT_SOC_API_BASE_URL:-http://127.0.0.1:8000/api}
     depends_on:
       backend:
         condition: service_healthy
     ports:
       - "3000:3000"
+
+  wazuh-poller:
+    profiles: ["wazuh-poller"]
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ot_soc}
+      POSTGRES_USER: ${POSTGRES_USER:-ot_soc}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ot_soc}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-ot-soc-mvp-local-development-secret}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-true}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-backend,localhost,127.0.0.1}
+      DJANGO_CORS_ALLOWED_ORIGINS: ${DJANGO_CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      WAZUH_ALERTS_URL: ${WAZUH_ALERTS_URL:-}
+      WAZUH_INDEXER_ALERTS_URL: ${WAZUH_INDEXER_ALERTS_URL:-}
+      WAZUH_API_USERNAME: ${WAZUH_API_USERNAME:-}
+      WAZUH_API_PASSWORD: ${WAZUH_API_PASSWORD:-}
+      WAZUH_API_TOKEN: ${WAZUH_API_TOKEN:-}
+      WAZUH_API_INSECURE: ${WAZUH_API_INSECURE:-true}
+      WAZUH_ALERTS_METHOD: ${WAZUH_ALERTS_METHOD:-POST}
+      WAZUH_ALERTS_SIZE: ${WAZUH_ALERTS_SIZE:-100}
+      WAZUH_ALERTS_POLL_INTERVAL: ${WAZUH_ALERTS_POLL_INTERVAL:-5}
+      OT_SOC_CORRELATION_WINDOW_SECONDS: ${OT_SOC_CORRELATION_WINDOW_SECONDS:-900}
+    command: python manage.py poll_wazuh_alerts
+    depends_on:
+      backend:
+        condition: service_healthy
 
 volumes:
   postgres18-data:

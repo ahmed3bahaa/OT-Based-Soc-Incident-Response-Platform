@@ -2,6 +2,12 @@ import os
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+from dotenv import load_dotenv
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR.parent / ".env")
+load_dotenv(BASE_DIR / ".env")
+
 
 def env_bool(name: str, default: bool) -> bool:
     value = os.getenv(name)
@@ -15,8 +21,6 @@ def env_list(name: str, default: list[str]) -> list[str]:
     if value is None:
         return default
     return [item.strip() for item in value.split(",") if item.strip()]
-
-BASE_DIR = Path(__file__).resolve().parent.parent
 
 DEBUG = env_bool("DJANGO_DEBUG", True)
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")

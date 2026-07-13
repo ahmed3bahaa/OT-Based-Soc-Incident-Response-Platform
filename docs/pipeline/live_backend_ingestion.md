@@ -65,13 +65,20 @@ python manage.py watch_wazuh_alerts \
 ## Wazuh / Indexer API Polling
 
 ```bash
-export WAZUH_INDEXER_ALERTS_URL="https://127.0.0.1:9200/wazuh-alerts-*/_search"
-export WAZUH_API_USERNAME="admin"
-export WAZUH_API_PASSWORD="admin"
-python manage.py poll_wazuh_alerts --insecure
+export WAZUH_INDEXER_ALERTS_URL="https://<WAZUH_INDEXER_IP>:9200/wazuh-alerts-*/_search"
+export WAZUH_API_USERNAME="<INDEXER_USER>"
+export WAZUH_API_PASSWORD="<INDEXER_PASSWORD>"
+export WAZUH_API_INSECURE="true"
+python manage.py poll_wazuh_alerts
 ```
 
 The poller fetches matching rule IDs and sends them through the same live correlation service.
+
+With Docker Compose, put the same values in the repository root `.env` file and run:
+
+```bash
+docker compose --profile wazuh-poller up -d wazuh-poller
+```
 
 ## Vector
 
@@ -92,15 +99,15 @@ http://127.0.0.1:8000/api/ingest/vector-alerts/
 SQLite remains the default. Docker Compose uses PostgreSQL 18. PostgreSQL is enabled by setting either:
 
 ```text
-DATABASE_URL=postgresql://ot_soc:ot_soc@127.0.0.1:5434/ot_soc
+DATABASE_URL=postgresql://<POSTGRES_USER>:<POSTGRES_PASSWORD>@127.0.0.1:5434/ot_soc
 ```
 
 Or:
 
 ```text
 POSTGRES_DB=ot_soc
-POSTGRES_USER=ot_soc
-POSTGRES_PASSWORD=ot_soc
+POSTGRES_USER=<POSTGRES_USER>
+POSTGRES_PASSWORD=<POSTGRES_PASSWORD>
 POSTGRES_HOST=127.0.0.1
 POSTGRES_PORT=5434
 ```

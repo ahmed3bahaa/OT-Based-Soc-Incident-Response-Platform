@@ -255,13 +255,13 @@ SQLite is used for local development. PostgreSQL 18 is configured for Docker and
 Database URL:
 
 ```text
-postgresql://ot_soc:ot_soc@db:5432/ot_soc
+postgresql://<POSTGRES_USER>:<POSTGRES_PASSWORD>@db:5432/<POSTGRES_DB>
 ```
 
 For pgAdmin or host-side scripts on Windows, connect through the Docker-published port:
 
 ```text
-postgresql://ot_soc:ot_soc@127.0.0.1:5434/ot_soc
+postgresql://<POSTGRES_USER>:<POSTGRES_PASSWORD>@127.0.0.1:5434/<POSTGRES_DB>
 ```
 
 The Docker host port is intentionally `5434` to avoid colliding with a local PostgreSQL service already bound to `5433`.
@@ -502,26 +502,47 @@ You need one of the following live ingestion methods.
 Use this if Docker backend on Windows can reach Wazuh Indexer:
 
 ```powershell
-docker compose exec backend python manage.py poll_wazuh_alerts `
-  --url https://<WAZUH_INDEXER_IP>:9200/wazuh-alerts-*/_search `
-  --username <USER> `
-  --password <PASSWORD> `
-  --insecure `
-  --window-seconds 900
+Copy-Item .env.example .env
+# Edit .env:
+# WAZUH_INDEXER_ALERTS_URL=https://<WAZUH_INDEXER_IP>:9200/wazuh-alerts-*/_search
+# WAZUH_API_USERNAME=<INDEXER_USER>
+# WAZUH_API_PASSWORD=<INDEXER_PASSWORD>
+# WAZUH_API_INSECURE=true
+
+docker compose --profile wazuh-poller up -d wazuh-poller
 ```
 
-Example:
+For a one-time poll test from the already running backend container:
 
 ```powershell
-docker compose exec backend python manage.py poll_wazuh_alerts `
-  --url https://192.168.56.10:9200/wazuh-alerts-*/_search `
-  --username admin `
-  --password admin `
-  --insecure `
-  --window-seconds 900
+docker compose exec backend python manage.py poll_wazuh_alerts --once
 ```
 
 In production, avoid `--insecure`. Use valid TLS certificates.
+
+The `9200` endpoint uses Wazuh Indexer/OpenSearch credentials. These are not
+necessarily the same as Wazuh server API credentials on `55000`.
+
+If the Wazuh installation assistant was used, print the generated passwords on
+the Ubuntu Wazuh node:
+
+```bash
+sudo tar -O -xvf wazuh-install-files.tar wazuh-install-files/wazuh-passwords.txt
+```
+
+To show only the `admin` indexer user:
+
+```bash
+sudo tar -axf wazuh-install-files.tar wazuh-install-files/wazuh-passwords.txt -O | grep -P "'admin'" -A 1
+```
+
+If the archive is gone, reset the indexer password on a Wazuh indexer node:
+
+```bash
+sudo /usr/share/wazuh-indexer/plugins/opensearch-security/tools/wazuh-passwords-tool.sh \
+  -u admin \
+  -p '<NEW_INDEXER_PASSWORD>'
+```
 
 ### Option B: Watch Wazuh `alerts.json`
 
@@ -1477,12 +1498,7 @@ python src/opcua_monitor.py \
 Run one ingestion method:
 
 ```powershell
-docker compose exec backend python manage.py poll_wazuh_alerts `
-  --url https://<WAZUH_INDEXER_IP>:9200/wazuh-alerts-*/_search `
-  --username <USER> `
-  --password <PASSWORD> `
-  --insecure `
-  --window-seconds 900
+docker compose --profile wazuh-poller up -d wazuh-poller
 ```
 
 ## 23.5 Perform UaExpert Change
@@ -1556,12 +1572,7 @@ python src/opcua_monitor.py \
 ## Poll Wazuh Indexer
 
 ```powershell
-docker compose exec backend python manage.py poll_wazuh_alerts `
-  --url https://<WAZUH_INDEXER_IP>:9200/wazuh-alerts-*/_search `
-  --username <USER> `
-  --password <PASSWORD> `
-  --insecure `
-  --window-seconds 900
+docker compose exec backend python manage.py poll_wazuh_alerts --once
 ```
 
 ## Watch Wazuh Alerts File

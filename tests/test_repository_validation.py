@@ -49,16 +49,21 @@ def test_vector_live_ingest_config_points_to_django_endpoint() -> None:
 def test_docker_compose_wires_frontend_to_backend_service() -> None:
     compose = yaml.safe_load((ROOT / "docker-compose.yml").read_text())
 
-    assert {"db", "backend", "frontend"} <= set(compose["services"])
+    assert {"db", "backend", "frontend", "wazuh-poller"} <= set(compose["services"])
     assert compose["services"]["db"]["image"] == "postgres:18-alpine"
     assert compose["services"]["db"]["volumes"] == ["postgres18-data:/var/lib/postgresql"]
-    assert "5434:5432" in compose["services"]["db"]["ports"]
-    assert compose["services"]["backend"]["environment"]["DATABASE_URL"].startswith(
-        "postgresql://"
+    assert "${POSTGRES_HOST_PORT:-5434}:5432" in compose["services"]["db"]["ports"]
+    assert compose["services"]["backend"]["environment"]["POSTGRES_HOST"] == "db"
+    assert compose["services"]["backend"]["environment"]["POSTGRES_PASSWORD"].startswith("${")
+    assert (
+        compose["services"]["backend"]["environment"]["WAZUH_API_PASSWORD"]
+        == "${WAZUH_API_PASSWORD:-}"
     )
+    assert compose["services"]["wazuh-poller"]["profiles"] == ["wazuh-poller"]
+    assert compose["services"]["wazuh-poller"]["command"] == "python manage.py poll_wazuh_alerts"
     assert (
         compose["services"]["frontend"]["environment"]["OT_SOC_API_BASE_URL"]
-        == "http://backend:8000/api"
+        == "${OT_SOC_API_BASE_URL:-http://backend:8000/api}"
     )
     assert "3000:3000" in compose["services"]["frontend"]["ports"]
     assert "8000:8000" in compose["services"]["backend"]["ports"]
