@@ -115,13 +115,21 @@ python manage.py watch_wazuh_alerts --file .\alerts.json --from-start --once --w
 Poll a Wazuh Indexer/OpenSearch alerts endpoint:
 
 ```powershell
-$env:WAZUH_INDEXER_ALERTS_URL="https://127.0.0.1:9200/wazuh-alerts-*/_search"
-$env:WAZUH_API_USERNAME="admin"
-$env:WAZUH_API_PASSWORD="admin"
-python manage.py poll_wazuh_alerts --insecure
+$env:WAZUH_INDEXER_ALERTS_URL="https://<WAZUH_INDEXER_IP>:9200/wazuh-alerts-*/_search"
+$env:WAZUH_API_USERNAME="<INDEXER_USER>"
+$env:WAZUH_API_PASSWORD="<INDEXER_PASSWORD>"
+$env:WAZUH_API_INSECURE="true"
+python manage.py poll_wazuh_alerts
 ```
 
-The poller can also use `WAZUH_ALERTS_URL`, `WAZUH_API_TOKEN`, `WAZUH_ALERTS_METHOD`, `WAZUH_ALERTS_BODY`, and `WAZUH_ALERTS_SIZE`.
+The poller can also use `WAZUH_ALERTS_URL`, `WAZUH_API_TOKEN`, `WAZUH_ALERTS_METHOD`, `WAZUH_ALERTS_BODY`, `WAZUH_ALERTS_SIZE`, and `WAZUH_ALERTS_LOOKBACK_SECONDS`.
+
+When running with Docker Compose, put these values in the repository root `.env` file
+and start the optional poller profile:
+
+```powershell
+docker compose --profile wazuh-poller up -d wazuh-poller
+```
 
 Vector can send matching Wazuh alerts directly to Django using:
 
@@ -173,7 +181,7 @@ $env:DJANGO_CORS_ALLOWED_ORIGINS="http://127.0.0.1:3000,http://localhost:3000"
 PostgreSQL can be enabled with either a URL:
 
 ```powershell
-$env:DATABASE_URL="postgresql://ot_soc:ot_soc@127.0.0.1:5434/ot_soc"
+$env:DATABASE_URL="postgresql://<POSTGRES_USER>:<POSTGRES_PASSWORD>@127.0.0.1:5434/ot_soc"
 python manage.py migrate
 ```
 
@@ -181,8 +189,8 @@ Or separate variables:
 
 ```powershell
 $env:POSTGRES_DB="ot_soc"
-$env:POSTGRES_USER="ot_soc"
-$env:POSTGRES_PASSWORD="ot_soc"
+$env:POSTGRES_USER="<POSTGRES_USER>"
+$env:POSTGRES_PASSWORD="<POSTGRES_PASSWORD>"
 $env:POSTGRES_HOST="127.0.0.1"
 $env:POSTGRES_PORT="5434"
 python manage.py migrate

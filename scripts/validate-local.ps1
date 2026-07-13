@@ -3,6 +3,7 @@ $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 Set-Location $Root
 $env:PYTHONIOENCODING = "utf-8"
+$env:OT_SOC_SKIP_DOTENV = "1"
 
 Write-Host "[validate] Installing backend validation dependencies"
 python -m pip install --upgrade pip

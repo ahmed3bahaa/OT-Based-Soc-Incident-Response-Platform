@@ -2,7 +2,7 @@
 
   <rule id="110200" level="3">
     <if_sid>110103</if_sid>
-    <field name="ot.tag" type="pcre2">^(SU_SEVIYESI|su_seviyesi|MOTOR1|motor1|MOTOR2|motor2|MOTOR3|motor3|VALF|valf|SAMANDIRA|samandira|DEBI|debi|DEBI2|debi2)$</field>
+    <field name="ot.tag" type="pcre2">^(SU_SEVIYESI|su_seviyesi|MOTOR1|motor1|MOTOR2|motor2|MOTOR3|motor3|VALF|valf|SAMANDIRA|samandira|DEBI|debi|DEBI2|debi2|ScenarioID|scenarioid)$</field>
     <description>OT simulator selected tag datachange observed - MVP rule</description>
     <group>ot,opcua,simulator,mvp,validation,</group>
   </rule>
