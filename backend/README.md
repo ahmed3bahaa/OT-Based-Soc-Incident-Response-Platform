@@ -122,7 +122,7 @@ $env:WAZUH_API_INSECURE="true"
 python manage.py poll_wazuh_alerts
 ```
 
-The poller can also use `WAZUH_ALERTS_URL`, `WAZUH_API_TOKEN`, `WAZUH_ALERTS_METHOD`, `WAZUH_ALERTS_BODY`, and `WAZUH_ALERTS_SIZE`.
+The poller can also use `WAZUH_ALERTS_URL`, `WAZUH_API_TOKEN`, `WAZUH_ALERTS_METHOD`, `WAZUH_ALERTS_BODY`, `WAZUH_ALERTS_SIZE`, and `WAZUH_ALERTS_LOOKBACK_SECONDS`.
 
 When running with Docker Compose, put these values in the repository root `.env` file
 and start the optional poller profile:

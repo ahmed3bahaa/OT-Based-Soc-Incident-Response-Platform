@@ -15,10 +15,10 @@ from django.core.management.base import BaseCommand, CommandError
 from soc.live_ingest import WATCH_RULES, ingest_live_alerts
 
 
-def default_search_body(size: int) -> dict[str, Any]:
+def default_search_body(size: int, lookback_seconds: int) -> dict[str, Any]:
     return {
         "size": size,
-        "sort": [{"@timestamp": {"order": "asc"}}],
+        "sort": [{"@timestamp": {"order": "desc"}}],
         "query": {
             "bool": {
                 "filter": [
@@ -26,7 +26,15 @@ def default_search_body(size: int) -> dict[str, Any]:
                         "terms": {
                             "rule.id": sorted(WATCH_RULES),
                         }
-                    }
+                    },
+                    {
+                        "range": {
+                            "@timestamp": {
+                                "gte": f"now-{lookback_seconds}s",
+                                "lte": "now",
+                            }
+                        }
+                    },
                 ]
             }
         },
@@ -82,6 +90,15 @@ class Command(BaseCommand):
             default=float(os.getenv("WAZUH_ALERTS_POLL_INTERVAL", "5")),
         )
         parser.add_argument(
+            "--lookback-seconds",
+            type=int,
+            default=os.getenv("WAZUH_ALERTS_LOOKBACK_SECONDS"),
+            help=(
+                "OpenSearch @timestamp lookback for the default query. "
+                "Defaults to max(window_seconds * 2, 1800)."
+            ),
+        )
+        parser.add_argument(
             "--window-seconds",
             type=int,
             default=int(os.getenv("OT_SOC_CORRELATION_WINDOW_SECONDS", "900")),
@@ -101,18 +118,20 @@ class Command(BaseCommand):
         method = options["method"]
         poll_interval = float(options["poll_interval"])
         window_seconds = int(options["window_seconds"])
+        lookback_seconds = int(options["lookback_seconds"] or max(window_seconds * 2, 1800))
         once = bool(options["once"])
         context = ssl._create_unverified_context() if options["insecure"] else None  # nosec B323
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"Polling {url} with method={method}, window={window_seconds}s"
+                f"Polling {url} with method={method}, window={window_seconds}s, "
+                f"lookback={lookback_seconds}s"
             )
         )
 
         while True:
             try:
-                payload = self.fetch_payload(url, method, options, context)
+                payload = self.fetch_payload(url, method, options, context, lookback_seconds)
             except urllib.error.URLError as error:
                 self.stderr.write(f"Wazuh poll failed: {error}")
                 if once:
@@ -146,6 +165,7 @@ class Command(BaseCommand):
         method: str,
         options: dict[str, Any],
         context: ssl.SSLContext | None,
+        lookback_seconds: int,
     ) -> Any:
         headers = {
             "Accept": "application/json",
@@ -157,7 +177,9 @@ class Command(BaseCommand):
             if options["body"]:
                 body = str(options["body"]).encode("utf-8")
             else:
-                body = json.dumps(default_search_body(int(options["size"]))).encode("utf-8")
+                body = json.dumps(
+                    default_search_body(int(options["size"]), lookback_seconds)
+                ).encode("utf-8")
 
         if options["token"]:
             headers["Authorization"] = f"Bearer {options['token']}"

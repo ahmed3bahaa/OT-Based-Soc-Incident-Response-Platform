@@ -69,6 +69,7 @@ export WAZUH_INDEXER_ALERTS_URL="https://<WAZUH_INDEXER_IP>:9200/wazuh-alerts-*/
 export WAZUH_API_USERNAME="<INDEXER_USER>"
 export WAZUH_API_PASSWORD="<INDEXER_PASSWORD>"
 export WAZUH_API_INSECURE="true"
+export WAZUH_ALERTS_LOOKBACK_SECONDS=1800
 python manage.py poll_wazuh_alerts
 ```
 
@@ -79,6 +80,12 @@ With Docker Compose, put the same values in the repository root `.env` file and 
 ```bash
 docker compose --profile wazuh-poller up -d wazuh-poller
 ```
+
+If the poller shows new `110104` alerts but no cases, Suricata is working but
+the OPC UA monitor/tag-change alert is missing. Check that Wazuh is receiving
+`opcua_monitor.jsonl` and triggering `110203` for `VALF` or `110204` for
+`SU_SEVIYESI`. A confirmed case requires one process/tag rule and one Suricata
+flow rule inside the correlation window.
 
 ## Vector
 

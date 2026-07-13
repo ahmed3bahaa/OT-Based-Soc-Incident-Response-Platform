@@ -10,6 +10,8 @@ from django.core.management.base import CommandError
 from django.test import TestCase
 from rest_framework.test import APITestCase
 
+from soc.management.commands.poll_wazuh_alerts import default_search_body
+
 from .models import Asset, Case, EvidenceEvent, LiveAlert, Rule, Tag
 
 
@@ -69,6 +71,35 @@ class SeedCatalogsCommandTests(TestCase):
         assert Tag.objects.count() == 8
         assert Asset.objects.count() == 2
         assert "rules updated=9" in out.getvalue()
+
+
+class PollWazuhAlertsCommandTests(TestCase):
+    def test_default_search_body_filters_recent_watch_rules(self) -> None:
+        body = default_search_body(size=25, lookback_seconds=1800)
+
+        assert body["size"] == 25
+        assert body["sort"] == [{"@timestamp": {"order": "desc"}}]
+
+        filters = body["query"]["bool"]["filter"]
+        assert {"terms": {"rule.id": sorted({
+            "110103",
+            "110104",
+            "110105",
+            "110200",
+            "110201",
+            "110202",
+            "110203",
+            "110204",
+            "110205",
+        })}} in filters
+        assert {
+            "range": {
+                "@timestamp": {
+                    "gte": "now-1800s",
+                    "lte": "now",
+                }
+            }
+        } in filters
 
 
 class ImportOpcuaCasesCommandTests(TestCase):

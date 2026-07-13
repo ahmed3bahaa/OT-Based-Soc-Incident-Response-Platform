@@ -2,11 +2,13 @@ import os
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from dotenv import load_dotenv
-
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR.parent / ".env")
-load_dotenv(BASE_DIR / ".env")
+
+if os.getenv("OT_SOC_SKIP_DOTENV", "").strip().lower() not in {"1", "true", "yes"}:
+    from dotenv import load_dotenv
+
+    load_dotenv(BASE_DIR.parent / ".env")
+    load_dotenv(BASE_DIR / ".env")
 
 
 def env_bool(name: str, default: bool) -> bool:

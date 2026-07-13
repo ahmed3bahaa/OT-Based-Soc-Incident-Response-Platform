@@ -508,6 +508,7 @@ Copy-Item .env.example .env
 # WAZUH_API_USERNAME=<INDEXER_USER>
 # WAZUH_API_PASSWORD=<INDEXER_PASSWORD>
 # WAZUH_API_INSECURE=true
+# WAZUH_ALERTS_LOOKBACK_SECONDS=1800
 
 docker compose --profile wazuh-poller up -d wazuh-poller
 ```
@@ -522,6 +523,13 @@ In production, avoid `--insecure`. Use valid TLS certificates.
 
 The `9200` endpoint uses Wazuh Indexer/OpenSearch credentials. These are not
 necessarily the same as Wazuh server API credentials on `55000`.
+
+If the poller shows recent `110104` alerts but creates no cases, network
+visibility is working but process/tag evidence is missing. Confirm that the
+Ubuntu OPC UA monitor is writing `opcua_monitor.jsonl` and that Wazuh is
+triggering `110203` for `VALF` or `110204` for `SU_SEVIYESI`. The backend only
+creates a confirmed case after it sees both the process/tag rule and the
+Suricata flow rule in the same correlation window.
 
 If the Wazuh installation assistant was used, print the generated passwords on
 the Ubuntu Wazuh node:
