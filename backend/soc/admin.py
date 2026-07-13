@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Asset, Case, EvidenceEvent, Rule, Tag
+from .models import Asset, Case, EvidenceEvent, LiveAlert, Rule, Tag
 
 
 class EvidenceEventInline(admin.TabularInline):
@@ -31,6 +31,14 @@ class EvidenceEventAdmin(admin.ModelAdmin):
     list_display = ("id", "case", "timestamp", "rule_id", "evidence_type", "agent")
     list_filter = ("rule_id", "evidence_type", "agent")
     search_fields = ("rule_id", "description", "agent", "location")
+
+
+@admin.register(LiveAlert)
+class LiveAlertAdmin(admin.ModelAdmin):
+    list_display = ("id", "source", "timestamp", "rule_id", "agent", "received_at", "correlated_at")
+    list_filter = ("source", "rule_id", "agent")
+    search_fields = ("fingerprint", "rule_id", "agent", "location")
+    readonly_fields = ("fingerprint", "received_at")
 
 
 @admin.register(Rule)

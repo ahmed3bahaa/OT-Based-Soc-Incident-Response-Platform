@@ -1,0 +1,16 @@
+[allowlist]
+description = "Intentional local-only placeholders and documentation examples"
+paths = [
+  '''docker-compose\.yml''',
+  '''backend/README\.md''',
+  '''docs/pipeline/live_backend_ingestion\.md''',
+  '''docs/OT_SOC_Live_Testing_Production_Guide\.md''',
+]
+regexes = [
+  '''ot_soc''',
+  '''admin''',
+  '''ot-soc-mvp-local-development-secret''',
+  '''<KEPSERVER_PASSWORD>''',
+  '''<strong secret>''',
+  '''user:password@db-host''',
+]

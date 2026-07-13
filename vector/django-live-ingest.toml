@@ -1,0 +1,36 @@
+# Vector example: send Wazuh alert JSONL into Django live ingestion.
+#
+# Run this on the Wazuh manager or wherever /var/ossec/logs/alerts/alerts.json
+# is available. The backend endpoint stores alerts, correlates recent OT evidence,
+# and creates cases automatically.
+
+[sources.wazuh_alerts_json]
+type = "file"
+include = ["/var/ossec/logs/alerts/alerts.json"]
+read_from = "end"
+
+[transforms.ot_rule_filter]
+type = "filter"
+inputs = ["wazuh_alerts_json"]
+condition = '''
+exists(.rule.id) &&
+includes(["110103","110104","110105","110200","110201","110202","110203","110204","110205"], string!(.rule.id))
+'''
+
+[sinks.django_live_ingest]
+type = "http"
+inputs = ["ot_rule_filter"]
+uri = "http://127.0.0.1:8000/api/ingest/vector-alerts/"
+method = "post"
+encoding.codec = "json"
+framing.method = "newline_delimited"
+healthcheck.enabled = true
+
+[sinks.django_live_ingest.batch]
+max_events = 1
+timeout_secs = 1
+
+[sinks.django_live_ingest.request]
+retry_attempts = 5
+retry_initial_backoff_secs = 1
+retry_max_duration_secs = 30

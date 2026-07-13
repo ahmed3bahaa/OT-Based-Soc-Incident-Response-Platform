@@ -27,6 +27,8 @@ CERTIFICATE = project_path(
 PRIVATE_KEY = project_path(
     os.getenv("OPCUA_PRIVATE_KEY", "certs/ot-scenario-client-key.pem")
 )
+USERNAME = os.getenv("OPCUA_USERNAME")
+PASSWORD = os.getenv("OPCUA_PASSWORD", "")
 
 
 async def search_node(
@@ -85,6 +87,9 @@ async def main() -> None:
 
     client = Client(url=ENDPOINT, timeout=10)
     client.application_uri = APPLICATION_URI
+    if USERNAME:
+        client.set_user(USERNAME)
+        client.set_password(PASSWORD)
 
     await client.set_security(
         SecurityPolicyBasic256Sha256,
