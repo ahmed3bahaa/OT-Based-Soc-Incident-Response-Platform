@@ -54,6 +54,8 @@ class FakeClient:
     def __init__(self, node: FakeNode) -> None:
         self.node = node
         self.application_uri = None
+        self.username = None
+        self.password = None
         self.requested_node_id = None
         self.security_configuration = None
         self.entered = False
@@ -73,6 +75,12 @@ class FakeClient:
             "private_key": private_key,
             "mode": mode,
         }
+
+    def set_user(self, username: str) -> None:
+        self.username = username
+
+    def set_password(self, password: str) -> None:
+        self.password = password
 
     async def __aenter__(self):
         self.entered = True
@@ -157,6 +165,8 @@ async def test_execute_write_success(
     }
 
     assert client.application_uri == scenario_client.APPLICATION_URI
+    assert client.username is None
+    assert client.password is None
     assert client.entered is True
     assert client.exited is True
     assert client.requested_node_id == node_id
@@ -197,6 +207,40 @@ async def test_execute_write_success(
     assert event["ot"]["verified_value"] == 15.0
     assert event["ot"]["verified"] is True
     assert "error" not in event
+
+
+@pytest.mark.asyncio
+async def test_execute_write_configures_username_password(
+    monkeypatch,
+) -> None:
+    node = FakeNode(
+        old_value=0.0,
+        variant_type=ua.VariantType.Float,
+        verified_value=1.0,
+    )
+    client = FakeClient(node)
+    events: list[dict[str, Any]] = []
+
+    install_fake_client(
+        monkeypatch,
+        client,
+        events,
+    )
+    monkeypatch.setattr(scenario_client, "USERNAME", "opcua_user")
+    monkeypatch.setattr(scenario_client, "PASSWORD", "opcua_password")
+
+    result = await scenario_client.execute_write(
+        node_id=(
+            "ns=2;s=watersim.TankPLC.MAIN."
+            "ARTIRMA_VERI.VALF"
+        ),
+        requested_value="1.0",
+        scenario_id="unit-auth-001",
+    )
+
+    assert result == 0
+    assert client.username == "opcua_user"
+    assert client.password == "opcua_password"
 
 
 @pytest.mark.asyncio

@@ -1,0 +1,78 @@
+name: Security
+
+on:
+  push:
+    branches: ["main", "feature/**"]
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  secret-scan:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: gitleaks/gitleaks-action@v2
+        with:
+          args: --config=.gitleaks.toml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  python-security:
+    name: Python Security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            opcua-client/requirements.txt
+
+      - name: Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install bandit pip-audit
+
+      - name: Bandit static analysis
+        run: |
+          bandit -r backend correlation opcua-client/src \
+            -x "backend/.venv,opcua-client/.venv,backend/soc/tests.py,opcua-client/tests" \
+            -ll
+
+      - name: Backend dependency audit
+        run: pip-audit -r backend/requirements.txt --progress-spinner off
+
+      - name: OPC UA client dependency audit
+        run: pip-audit -r opcua-client/requirements.txt --progress-spinner off
+
+  frontend-security:
+    name: Frontend Security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Audit high severity frontend dependencies
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high

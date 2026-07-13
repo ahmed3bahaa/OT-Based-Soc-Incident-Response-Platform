@@ -6,7 +6,7 @@ from pathlib import Path
 from django.core.management.base import BaseCommand, CommandError
 
 from soc.catalog import seed_catalogs
-from soc.importers import import_cases_payload
+from soc.importers import CaseImportValidationError, import_cases_payload
 
 
 class Command(BaseCommand):
@@ -32,7 +32,10 @@ class Command(BaseCommand):
             raise CommandError(f"Invalid JSON in {path}: {error}") from error
 
         seed_counts = seed_catalogs()
-        result = import_cases_payload(payload)
+        try:
+            result = import_cases_payload(payload)
+        except CaseImportValidationError as error:
+            raise CommandError("Invalid case payload: " + "; ".join(error.errors)) from error
 
         self.stdout.write(
             self.style.SUCCESS(

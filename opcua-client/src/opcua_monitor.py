@@ -38,6 +38,9 @@ PRIVATE_KEY = resolve_project_path(
     os.getenv("OPCUA_PRIVATE_KEY", "certs/ot-scenario-client-key.pem")
 )
 
+USERNAME = os.getenv("OPCUA_USERNAME")
+PASSWORD = os.getenv("OPCUA_PASSWORD", "")
+
 MONITOR_LOG_FILE = resolve_project_path(
     os.getenv("OPCUA_MONITOR_LOG_FILE", "logs/opcua_monitor.jsonl")
 )
@@ -54,6 +57,9 @@ def utc_now() -> str:
 def json_safe(value: Any) -> Any:
     if value is None or isinstance(value, (str, int, float, bool)):
         return value
+
+    if isinstance(value, Path):
+        return value.as_posix()
 
     if isinstance(value, bytes):
         return value.hex()
@@ -155,6 +161,7 @@ async def run_monitor(
     print("[+] Security: Basic256Sha256 / SignAndEncrypt")
     print(f"[+] Certificate: {CERTIFICATE}")
     print(f"[+] Private key: {PRIVATE_KEY}")
+    print(f"[+] User identity: {'username' if USERNAME else 'anonymous'}")
     print(f"[+] Monitor log: {MONITOR_LOG_FILE}")
     print(f"[+] Scenario ID: {scenario_id}")
 
@@ -166,6 +173,9 @@ async def run_monitor(
 
     client = Client(url=ENDPOINT, timeout=10)
     client.application_uri = APPLICATION_URI
+    if USERNAME:
+        client.set_user(USERNAME)
+        client.set_password(PASSWORD)
 
     await client.set_security(
         SecurityPolicyBasic256Sha256,
@@ -249,4 +259,4 @@ if __name__ == "__main__":
         raise SystemExit(asyncio.run(main()))
     except KeyboardInterrupt:
         print("\n[+] Monitor stopped by user.")
-        raise SystemExit(0)
+        raise SystemExit(0) from None

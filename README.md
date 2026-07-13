@@ -34,6 +34,56 @@ Python OPC UA client and UaExpert
 → Django REST Framework and PostgreSQL
 → Next.js SOC Dashboard
 
+## Docker MVP Stack
+
+The backend, frontend, and PostgreSQL 18 database can run together with Docker Compose:
+
+```powershell
+docker compose up --build
+```
+
+Open:
+
+```text
+Frontend: http://127.0.0.1:3000
+Backend:  http://127.0.0.1:8000/api/
+Swagger:  http://127.0.0.1:8000/api/docs/
+PostgreSQL for pgAdmin/host tools: 127.0.0.1:5434
+```
+
+The frontend container talks to the backend container through:
+
+```text
+OT_SOC_API_BASE_URL=http://backend:8000/api
+```
+
+Browser-visible API links use:
+
+```text
+NEXT_PUBLIC_OT_SOC_API_BASE_URL=http://127.0.0.1:8000/api
+```
+
+PostgreSQL 18 uses the `postgres18-data` Docker volume mounted at:
+
+```text
+/var/lib/postgresql
+```
+
+The PostgreSQL container still listens on `5432` inside Docker, but Docker exposes
+it to Windows on `5434`. Use `127.0.0.1:5434` from pgAdmin or local scripts.
+This avoids collisions with a local PostgreSQL service already listening on `5433`.
+
+If an older PostgreSQL volume was created with the previous `/var/lib/postgresql/data`
+mount, recreate the stack with the PostgreSQL 18 layout:
+
+```powershell
+docker compose down
+docker compose up --build
+```
+
+Use `docker compose down -v` only when you intentionally want to delete disposable
+lab database data and let Django rebuild the schema from migrations.
+
 ## Current Verified Milestones
 
 - Secure OPC UA communication using Basic256Sha256 with Sign and Encrypt.
@@ -63,23 +113,42 @@ Python OPC UA client and UaExpert
 
 Implemented:
 
-- Secure Python OPC UA scenario client.
-- OPC UA operation JSON logger.
+- Secure Python OPC UA scenario client and passive monitor.
+- OPC UA operation JSON logging.
 - Suricata network-flow collection.
-- Wazuh ingestion verification for both evidence sources.
+- Wazuh ingestion verification for process and network evidence.
+- Environment-specific Wazuh OT simulator rules.
+- Correlation script for `confirmed_opcua_operation` case JSON.
+- Django REST backend for cases, evidence, rules, tags, assets, Swagger, and live alert ingestion.
+- Backend-side live Wazuh/Vector alert correlation with a file watcher and configurable Wazuh/Indexer API poller.
+- SQLite local database with PostgreSQL environment configuration.
+- Next.js SOC dashboard for imported/live correlated cases.
+- Vector HTTP sink example for sending Wazuh alerts into Django.
 
 Not yet implemented:
 
-- Environment-specific Wazuh OT rules.
-- Vector normalization.
-- Django REST ingestion.
-- PostgreSQL models.
-- Asset and tag enrichment.
-- Explainable risk scoring.
-- Incident approval workflow.
-- Next.js SOC dashboard.
-- Docker Compose deployment.
-- CI/CD security gates.
+- Production deployment packaging.
+- Full analyst case lifecycle, notes, evidence hashing, and approval workflow.
+- Advanced OT risk scoring beyond the current explainable rule-based classification.
+- Production-grade image hardening and release signing.
+
+## Validation
+
+Local full validation:
+
+```powershell
+.\scripts\validate-local.ps1
+```
+
+Linux/CI validation:
+
+```bash
+./scripts/validate-ci.sh
+```
+
+The CI pipeline covers Django tests, repository validation, OPC UA client tests,
+frontend lint/build, OpenAPI validation, Docker Compose validation, dependency
+audits, and secret scanning.
 
 ## Repository Security
 

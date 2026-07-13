@@ -60,6 +60,28 @@ class EvidenceEvent(models.Model):
         return f"{self.rule_id} evidence for case {self.case_id}"
 
 
+class LiveAlert(models.Model):
+    source = models.CharField(max_length=80)
+    fingerprint = models.CharField(max_length=64, unique=True)
+    timestamp = models.DateTimeField(null=True, blank=True, db_index=True)
+    rule_id = models.CharField(max_length=20, blank=True, db_index=True)
+    agent = models.CharField(max_length=100, blank=True)
+    location = models.TextField(blank=True)
+    raw = models.JSONField(default=dict, blank=True)
+    received_at = models.DateTimeField(auto_now_add=True)
+    correlated_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ("-timestamp", "-received_at", "-id")
+        indexes = [
+            models.Index(fields=("source", "timestamp")),
+            models.Index(fields=("rule_id", "timestamp")),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.source} {self.rule_id or 'unknown'} {self.timestamp or self.received_at}"
+
+
 class Rule(models.Model):
     rule_id = models.CharField(max_length=20, unique=True)
     name = models.CharField(max_length=150)

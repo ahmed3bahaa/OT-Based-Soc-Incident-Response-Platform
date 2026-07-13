@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "feature/**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend-and-repo-validation:
+    name: Backend and Repository Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+
+      - name: Install backend and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r backend/requirements.txt pytest
+
+      - name: Django checks and migrations
+        run: |
+          python backend/manage.py check
+          python backend/manage.py makemigrations --check --dry-run
+
+      - name: Backend tests
+        run: python backend/manage.py test soc
+
+      - name: Repository validation tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python -m pytest tests
+
+      - name: Generate OpenAPI schema
+        run: python backend/manage.py spectacular --file openapi-schema.yml
+
+      - name: Validate OpenAPI includes live ingest endpoints
+        run: |
+          grep -q "/api/ingest/wazuh-alerts/" openapi-schema.yml
+          grep -q "/api/ingest/vector-alerts/" openapi-schema.yml
+          grep -q "/api/live-alerts/" openapi-schema.yml
+
+  opcua-client:
+    name: OPC UA Client
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: |
+            opcua-client/requirements.txt
+            opcua-client/requirements-dev.txt
+
+      - name: Install OPC UA client dependencies
+        working-directory: opcua-client
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+
+      - name: Ruff
+        working-directory: opcua-client
+        run: ruff check src tests
+
+      - name: Pytest
+        working-directory: opcua-client
+        run: pytest
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Lint frontend
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          OT_SOC_API_BASE_URL: http://127.0.0.1:8000/api
+          NEXT_PUBLIC_OT_SOC_API_BASE_URL: http://127.0.0.1:8000/api
+        run: npm run build
+
+      - name: Audit frontend high severity dependencies
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
+
+  docker:
+    name: Docker Compose
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate compose file
+        run: docker compose config
+
+      - name: Build backend image
+        run: docker compose build backend
+
+      - name: Build frontend image
+        run: docker compose build frontend
