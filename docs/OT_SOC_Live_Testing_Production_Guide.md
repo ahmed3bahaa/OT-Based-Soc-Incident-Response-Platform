@@ -1542,7 +1542,222 @@ The dashboard case was created because the backend received both process evidenc
 
 ---
 
-# 24. Quick Command Appendix
+# 24. Live Lab Automation Scripts
+
+The manual commands are useful for debugging, but the DevOps direction is to
+make the working lab repeatable. The project now includes automation scripts for
+starting, checking, and stopping the live platform.
+
+The scripts are intentionally small. They automate the repeatable service steps
+without changing the OT telemetry design:
+
+```text
+Windows automation
+-> Docker PostgreSQL/backend/frontend
+-> optional Wazuh poller profile
+-> Suricata flow proof script
+-> optional SSH start for Ubuntu OPC UA monitor
+-> health/status checks
+```
+
+The only remaining manual live action should be the engineering/operator action
+inside UaExpert:
+
+```text
+Change a monitored simulator tag.
+```
+
+## 24.1 Start The Live Platform
+
+From the repository root on Windows:
+
+```powershell
+.\scripts\start-live-platform.ps1
+```
+
+This starts:
+
+```text
+PostgreSQL 18
+Django backend
+Next.js frontend
+Wazuh poller profile
+Suricata flow proof script
+```
+
+It also checks:
+
+```text
+KEPServerEX OPC UA reachability
+backend health endpoint
+frontend reachability
+```
+
+If the Wazuh Indexer credentials are not configured yet:
+
+```powershell
+.\scripts\start-live-platform.ps1 -SkipPoller
+```
+
+If Suricata is already running:
+
+```powershell
+.\scripts\start-live-platform.ps1 -SkipSuricata
+```
+
+## 24.2 Start The Ubuntu Monitor Over SSH
+
+If Windows can SSH into the Ubuntu VM, set:
+
+```powershell
+$env:LAB_UBUNTU_HOST = "192.168.56.10"
+$env:LAB_UBUNTU_USER = "ahmed_bahaa"
+$env:LAB_UBUNTU_OPCUA_CLIENT_DIR = "~/ot-project/opcua-client"
+```
+
+Then run:
+
+```powershell
+.\scripts\start-live-platform.ps1 -StartUbuntuMonitor
+```
+
+If an SSH key is used:
+
+```powershell
+$env:LAB_UBUNTU_SSH_KEY = "C:\Users\Ahmed_364\.ssh\id_ed25519"
+.\scripts\start-live-platform.ps1 -StartUbuntuMonitor
+```
+
+The remote monitor subscribes to all simulator tags:
+
+```text
+DEBI
+MOTOR1
+MOTOR2
+SAMANDIRA
+SU_SEVIYESI
+ScenarioID
+VALF
+```
+
+## 24.3 Ubuntu Environment File
+
+The Python OPC UA monitor runs on Ubuntu and reads:
+
+```text
+opcua-client/.env
+```
+
+Create it on Ubuntu from the repository root:
+
+```bash
+cp opcua-client/.env.example opcua-client/.env
+nano opcua-client/.env
+```
+
+Set the lab values there:
+
+```text
+OPCUA_ENDPOINT=opc.tcp://192.168.56.1:49320
+OPCUA_USERNAME=<KEPSERVER_USERNAME>
+OPCUA_PASSWORD=<KEPSERVER_PASSWORD>
+```
+
+Do not commit `opcua-client/.env`. It is ignored by Git.
+
+## 24.4 Ubuntu Monitor Automation
+
+Run these from the repository root on Ubuntu, meaning the directory that contains
+both `scripts/` and `opcua-client/`.
+
+Start the monitor in the background:
+
+```bash
+bash scripts/start-ubuntu-monitor.sh
+```
+
+Check monitor status and recent logs:
+
+```bash
+bash scripts/status-ubuntu-monitor.sh
+```
+
+Stop the monitor:
+
+```bash
+bash scripts/stop-ubuntu-monitor.sh
+```
+
+The start script subscribes to all simulator tags and writes:
+
+```text
+opcua-client/logs/opcua_monitor_automation.out
+opcua-client/logs/opcua_monitor.pid
+```
+
+## 24.5 Ubuntu Foreground Fallback
+
+If you want the monitor attached to the terminal for debugging:
+
+```bash
+bash scripts/run-opcua-trigger-pipeline.sh
+```
+
+The script is repo-relative and supports overrides:
+
+```bash
+OPCUA_MONITOR_SCENARIO_ID="uaexpert-live-test" \
+OPCUA_MONITOR_INTERVAL_MS=1000 \
+bash scripts/run-opcua-trigger-pipeline.sh
+```
+
+## 24.6 Status
+
+From Windows:
+
+```powershell
+.\scripts\status-live-platform.ps1
+```
+
+This prints:
+
+```text
+Docker Compose service state
+backend and frontend reachability
+KEPServerEX port reachability
+Suricata process and eve.json status
+recent Wazuh poller logs
+```
+
+## 24.7 Stop
+
+Stop Docker services:
+
+```powershell
+.\scripts\stop-live-platform.ps1
+```
+
+Stop Docker and Suricata:
+
+```powershell
+.\scripts\stop-live-platform.ps1 -StopSuricata
+```
+
+Stop Docker, Suricata, and the SSH-started Ubuntu monitor:
+
+```powershell
+.\scripts\stop-live-platform.ps1 -StopSuricata -StopUbuntuMonitor
+```
+
+For the focused automation reference, read:
+
+```text
+docs/pipeline/live_lab_automation.md
+```
+
+---
+
+# 25. Quick Command Appendix
 
 ## Start Docker
 
@@ -1618,7 +1833,7 @@ docker compose exec db psql -U ot_soc -d ot_soc -c "select id, tag, classificati
 
 ---
 
-# 25. References
+# 26. References
 
 These references were used for production and DevSecOps guidance:
 
@@ -1637,14 +1852,14 @@ These references were used for production and DevSecOps guidance:
 
 ---
 
-# 26. Final Notes
+# 27. Final Notes
 
 This project has reached a meaningful MVP stage. It can show a real chain from manual OPC UA change to dashboard case, as long as the Wazuh and Suricata evidence path is correctly connected.
 
 The best next phase is not to add many features at once. The best next phase is:
 
 ```text
-1. make the live lab test repeatable
+1. keep the live lab automation repeatable
 2. add analyst case lifecycle
 3. add evidence hashing and audit timeline
 4. harden production deployment
