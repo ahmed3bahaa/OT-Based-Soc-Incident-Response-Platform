@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Platform overview placeholder</title>
+  <desc id="desc">Placeholder image for the OT SOC platform overview.</desc>
+  <rect width="1280" height="720" fill="#0f172a"/>
+  <rect x="70" y="62" width="1140" height="596" rx="22" fill="#f8fafc"/>
+  <text x="640" y="150" fill="#0f172a" font-family="Arial, sans-serif" font-size="46" font-weight="700" text-anchor="middle">Platform Overview Placeholder</text>
+  <text x="640" y="210" fill="#475569" font-family="Arial, sans-serif" font-size="28" text-anchor="middle">Replace with dashboard screenshot or architecture image</text>
+  <rect x="150" y="300" width="190" height="110" rx="14" fill="#dbeafe" stroke="#2563eb" stroke-width="4"/>
+  <rect x="420" y="300" width="190" height="110" rx="14" fill="#dcfce7" stroke="#16a34a" stroke-width="4"/>
+  <rect x="690" y="300" width="190" height="110" rx="14" fill="#fef3c7" stroke="#d97706" stroke-width="4"/>
+  <rect x="960" y="300" width="190" height="110" rx="14" fill="#fee2e2" stroke="#dc2626" stroke-width="4"/>
+  <path d="M340 355h80M610 355h80M880 355h80" stroke="#334155" stroke-width="8" stroke-linecap="round"/>
+  <text x="245" y="365" fill="#0f172a" font-family="Arial, sans-serif" font-size="22" font-weight="700" text-anchor="middle">OPC UA</text>
+  <text x="515" y="365" fill="#0f172a" font-family="Arial, sans-serif" font-size="22" font-weight="700" text-anchor="middle">Wazuh</text>
+  <text x="785" y="365" fill="#0f172a" font-family="Arial, sans-serif" font-size="22" font-weight="700" text-anchor="middle">Django</text>
+  <text x="1055" y="365" fill="#0f172a" font-family="Arial, sans-serif" font-size="22" font-weight="700" text-anchor="middle">Dashboard</text>
+  <text x="640" y="575" fill="#64748b" font-family="Arial, sans-serif" font-size="24" text-anchor="middle">docs/images/platform-overview-placeholder.svg</text>
+</svg>
