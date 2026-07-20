@@ -10,7 +10,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/ahmed3bahaa/OT-Based-Soc-Incident-Response-Platform">
-    <img src="docs/images/logo-placeholder.svg" alt="OT SOC platform logo placeholder" width="90" height="90">
+    <img src="docs/images/Logo.png" alt="OT SOC platform logo " width="90" height="90">
   </a>
 
   <h3 align="center">OT/ICS Incident Response Platform</h3>
@@ -299,8 +299,8 @@ More live testing detail is available in [docs/OT_SOC_Live_Testing_Production_Gu
 Placeholder images are included under `docs/images/` so you can replace them manually later without changing the README layout.
 
 <p align="center">
-  <img src="docs/images/dashboard-placeholder.svg" alt="SOC dashboard screenshot placeholder" width="48%">
-  <img src="docs/images/pipeline-placeholder.svg" alt="OT SOC pipeline diagram placeholder" width="48%">
+  <img src="docs/images/Demo.png" alt="SOC dashboard screenshot " width="48%">
+  <img src="docs/images/architecture.png" alt="OT SOC pipeline diagram " width="48%">
 </p>
 
 Suggested final visuals:
@@ -335,7 +335,7 @@ UaExpert manual tag change
 The main confirmed OPC UA operation pattern is process evidence plus network evidence within the configured correlation window. For example, the repository documentation describes valve validation through Wazuh rule `110203` and Suricata flow rule `110104`, producing a `confirmed_opcua_operation` case when both sides match.
 
 <p align="center">
-  <img src="docs/images/evidence-placeholder.svg" alt="Evidence correlation placeholder" width="82%">
+  <img src="docs/images/Demo.png" alt="Evidence correlation " width="82%">
 </p>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
